@@ -13,6 +13,8 @@ import com.shu.Pano.R;
 
 
 public class PanoFragment extends Fragment {
+
+    private int photoCount;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.pano_frag,container,false);
@@ -23,8 +25,8 @@ public class PanoFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         TextView tw1 = (TextView) getView().findViewById(R.id.count);
-
-        tw1.setText("count - " + Float.toString(getActivity().getIntent().getIntExtra("photocount",1)));
+        photoCount= getActivity().getIntent().getIntExtra("photocount",1);
+        tw1.setText(Integer.toString(photoCount));
 
     }
 }

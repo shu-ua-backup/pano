@@ -58,14 +58,18 @@ public class StartFragment extends Fragment {
     }
 
     private int getPhotoCount(SeekBar seekBar) {
-        Camera camera = Camera.open();
+        final Camera camera = Camera.open();
         float horAngle = camera.getParameters().getHorizontalViewAngle();
         if (horAngle > 60) {
             horAngle = 50;
         }
-        Thread thread = new Thread();
-        thread.
-        //camera.release();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                camera.release();
+            }
+        });
+        thread.start();
 
         float pr = seekBar.getProgress()+60;
         int res =  (int)(pr/horAngle)+1;
