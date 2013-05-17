@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical" >
+    <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:shrinkColumns="*"
+            android:stretchColumns="*"
+            android:background="#000000">
+
+    <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+    <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingRight="20dp"
+            android:id="@+id/start_angle" android:indeterminate="false"
+            android:max="300"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/textView" android:layout_gravity="center"/>
+
+    </TableRow>
+
+        <Button
+                android:padding="20dp"
+                android:id="@+id/camera_button"
+                android:text="Отримати зображення"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </TableLayout>
+</LinearLayout>
