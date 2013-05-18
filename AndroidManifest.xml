@@ -22,7 +22,8 @@
 
         </activity>
 
-        <activity android:name=".Activities.PanoActivity">
+        <activity android:name=".Activities.PanoActivity"
+                  android:screenOrientation="landscape">
 
         </activity>
     </application>

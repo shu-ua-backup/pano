@@ -63,13 +63,12 @@ public class StartFragment extends Fragment {
         if (horAngle > 60) {
             horAngle = 50;
         }
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+      //  Thread thread = new Thread(new Runnable() {
+      //      @Override
+      //      public void run() {
                 camera.release();
-            }
-        });
-        thread.start();
+        //    }
+       // });
 
         float pr = seekBar.getProgress()+60;
         int res =  (int)(pr/horAngle)+1;
