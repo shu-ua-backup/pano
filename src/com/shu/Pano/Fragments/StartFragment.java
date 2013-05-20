@@ -32,7 +32,7 @@ public class StartFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), PanoActivity.class);
-                intent.putExtra("photocount",getPhotoCount(stAngleSB));
+                intent.putExtra("photocount",stAngleSB.getProgress());
              //   Toast.makeText(getView().getContext(), Integer.toString(getPhotoCount(stAngleSB)), Toast.LENGTH_SHORT).show();
                 startActivity(intent);
 
@@ -57,22 +57,4 @@ public class StartFragment extends Fragment {
         });
     }
 
-    private int getPhotoCount(SeekBar seekBar) {
-        final Camera camera = Camera.open();
-        float horAngle = camera.getParameters().getHorizontalViewAngle();
-        if (horAngle > 60) {
-            horAngle = 50;
-        }
-      //  Thread thread = new Thread(new Runnable() {
-      //      @Override
-      //      public void run() {
-                camera.release();
-        //    }
-       // });
-
-        float pr = seekBar.getProgress()+60;
-        int res =  (int)(pr/horAngle)+1;
-
-        return res;
-    }
 }
