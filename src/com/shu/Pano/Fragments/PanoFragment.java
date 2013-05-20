@@ -1,15 +1,19 @@
 package com.shu.Pano.Fragments;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
-import android.hardware.Camera;
+import android.hardware.*;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.*;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.shu.Pano.Objects.Coordinates;
 import com.shu.Pano.R;
+import com.shu.Pano.helpers.SaveInBackground;
 
 import java.io.IOException;
 
@@ -20,6 +24,10 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
     private SurfaceView preview;
     private SurfaceHolder surfaceHolder;
     private Camera camera;
+    private SensorManager mSensorManager;
+    private TextView angleVtw;
+    private TextView angleHtw;
+    private Sensor mLight;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -29,25 +37,20 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        angleHtw = (TextView) getView().findViewById(R.id.angle_h);
+        angleVtw = (TextView) getView().findViewById(R.id.angle_v);
 
         photoCount= getActivity().getIntent().getIntExtra("photocount",1);
+
+
+        mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        mLight =  mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
         updateInfo();
         camera = Camera.open();
         changeCameraParam(camera.getParameters());
         preview = (SurfaceView) getActivity().findViewById(R.id.prewiew);
-        preview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                camera.autoFocus(new Camera.AutoFocusCallback() {
-                    @Override
-                    public void onAutoFocus(boolean b, Camera camera) {
-                        photoCount--;
-                        updateInfo();
-                    }
-                });
-            }
-        });
+
         surfaceHolder = preview.getHolder();
 
         surfaceHolder.addCallback(this);
@@ -73,7 +76,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
         }
 
         Camera.Parameters parameters = camera.getParameters();
-
+        angleAccel();
         int previewSurfaceWidth = preview.getWidth();
         int previewSurfaceHeight = preview.getHeight();
 
@@ -122,9 +125,91 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
     }
 
     private void updateInfo() {
-        TextView tw1 = (TextView) getView().findViewById(R.id.count);
-        tw1.setText("Залишилось: " + Integer.toString(photoCount));
 
+
+        if (photoCount<=0) {
+            //show result:
+        } else {
+            TextView tw1 = (TextView) getView().findViewById(R.id.count);
+            tw1.setText("Залишилось: " + Integer.toString(photoCount));
+        }
 
     }
+
+    private void angleAccel() {
+
+        mSensorManager.registerListener(new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                angleVtw.setText("Horisontal - " + Integer.toString(Math.round(sensorEvent.values[0])));
+                angleHtw.setText("x - " + Integer.toString(Math.round(sensorEvent.values[1])));
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+
+            }
+        }, mLight, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    private Coordinates getPhoto(final Coordinates prev_coord) {
+        final Coordinates next_coord = prev_coord;
+
+        //Phototake callback
+        final Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] bytes, Camera camera) {
+                new SaveInBackground().execute(bytes);
+                camera.startPreview();
+            }
+        };
+
+        mSensorManager.registerListener(new SensorEventListener() {
+
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+
+                if (prev_coord==null) {
+                    next_coord.setxAxis(sensorEvent.values[0]);
+                    next_coord.setyAxis(sensorEvent.values[1]);
+                    next_coord.setzAxis(sensorEvent.values[2]);
+                } else {
+                    //make photo
+                    if (Math.round(sensorEvent.values[0]) == Math.round(prev_coord.getxAxis())) {
+                        takePic(pictureCallback);
+                        float x = sensorEvent.values[0] + prev_coord.getxAxis();
+                            if (x > 360) {
+                                next_coord.setxAxis(x);
+                            }
+                            else {
+                                next_coord.setxAxis(x-360);
+                            }
+                        next_coord.setxAxis(sensorEvent.values[0]+prev_coord.getxAxis());
+                    }
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+            }
+
+        },mLight,SensorManager.SENSOR_DELAY_GAME);
+
+        return next_coord;
+    }
+
+    private void takePic(final Camera.PictureCallback pc) {
+        camera.autoFocus(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean b, Camera camera) {
+                if (b) {
+                    updateInfo();
+                    photoCount--;
+
+                    camera.takePicture(null, null, null,pc);
+                }
+            }
+        });
+    }
+
 }
