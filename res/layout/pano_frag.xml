@@ -40,9 +40,9 @@
 
     <ImageView
             android:id="@+id/photo_btn"
-            android:layout_width="150dp"
+            android:layout_width="100dp"
             android:layout_height="100dp"
-            android:src="@drawable/camera_icon_md"
+            android:src="@drawable/camera_icon"
             android:layout_gravity="right"/>
 
     <TextView
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:text="Старт"
             android:textSize="40dp"
-            android:id="@+id/count" android:layout_gravity="bottom|center"/>
+            android:id="@+id/status" android:layout_gravity="bottom|center"/>
 
 
 </FrameLayout>

@@ -1,14 +1,12 @@
 package com.shu.Pano.Fragments;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.hardware.*;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.*;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,9 +27,12 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
     private SensorManager mSensorManager1;
     private TextView angleVtw;
     private TextView angleHtw;
+    private TextView statusTw;
+    private ImageView photoBtn;
     private Sensor mLight;
     private Sensor mLight1;
-    private Coordinates next_coord = new Coordinates(0,0,0);
+    private Coordinates next_coord;
+    private boolean isFirst;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -47,6 +48,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
 
         angleHtw = (TextView) getView().findViewById(R.id.angle_h);
         angleVtw = (TextView) getView().findViewById(R.id.angle_v);
+        statusTw = (TextView) getView().findViewById(R.id.status);
 
         mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
         mLight =  mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
@@ -66,20 +68,24 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
 
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-        ImageView btn = (ImageView) getView().findViewById(R.id.photo_btn);
+        photoBtn = (ImageView) getView().findViewById(R.id.photo_btn);
 
-        btn.setOnClickListener(new View.OnClickListener() {
+
+        photoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getFirstCoord();
-                next_coord.setyAxis(123);
-                takePic(pictureCallback);
+       //         getFirstCoord();
+       //         next_coord.setyAxis(123);
+       //         takePic(pictureCallback);
                // while (photoCount > 0) {
                     //     Log.e("coor",Float.toString(next_coord.getxAxis()));
                     //     Log.e("coor",Float.toString(next_coord.getyAxis()));
                     //     getPhoto();
 
             //    }
+                isFirst=true;
+                getPhoto();
+                photoBtn.setImageResource(R.drawable.camera_icon_red);
 
             }
         });
@@ -123,7 +129,6 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
         //getFirstCoord();
 
         angleAccel();
-        next_coord.setyAxis(123);
         int previewSurfaceWidth = preview.getWidth();
         int previewSurfaceHeight = preview.getHeight();
 
@@ -200,7 +205,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
             public void onAccuracyChanged(Sensor sensor, int i) {
 
             }
-        }, mLight, SensorManager.SENSOR_DELAY_NORMAL);
+        }, mLight, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     //callback for taking and save photo
@@ -228,27 +233,31 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
 
 
     private void getPhoto() {
-
-
         //Sensor Event
         SensorEventListener sensorEventListener = new SensorEventListener() {
 
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-
+                if (photoCount > 0) {
+                    if (isFirst) {
+                        isFirst=false;
+                        next_coord = new Coordinates(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
+                        Log.e("x-coord",Float.toString(next_coord.getxAxis()));
+                        takePic(pictureCallback);
+                        addAngle();
+                    } else
                     if (Math.round(sensorEvent.values[0]) == Math.round(next_coord.getxAxis())) {
-
-                        float x = next_coord.getxAxis() + camera.getParameters().getHorizontalViewAngle();
-                        if (x < 360) {
-                            next_coord.setxAxis(x);
-                        }
-                        else {
-                            next_coord.setxAxis(x-360);
-                        }
-                         takePic(pictureCallback);
-                        mSensorManager.unregisterListener(this);
+                        Log.e("x-coord",Float.toString(next_coord.getxAxis()));
+                        takePic(pictureCallback);
+                        addAngle();
                     }
                 }
+                else {
+                    statusTw.setText("DONE");
+                    photoBtn.setImageResource(R.drawable.camera_icon);
+                    mSensorManager1.unregisterListener(this);
+                }
+            }
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int i) {
@@ -259,7 +268,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
         //HEAD:
         if (photoCount > 0) {
 
-        mSensorManager1.registerListener(sensorEventListener,mLight1,SensorManager.SENSOR_DELAY_GAME);
+        mSensorManager1.registerListener(sensorEventListener,mLight1,SensorManager.SENSOR_DELAY_FASTEST);
         } else {
             mSensorManager1.unregisterListener(sensorEventListener);
         }
@@ -276,6 +285,19 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
         int res =  (int)(pr/horAngle)+1;
 
         return res;
+    }
+
+    private void addAngle() {
+        float x = next_coord.getxAxis() + camera.getParameters().getHorizontalViewAngle();
+        if (x < 360) {
+            next_coord.setxAxis(x);
+        }
+        else {
+            next_coord.setxAxis(x-360);
+        }
+
+        statusTw.setText(Float.toString(next_coord.getxAxis()));
+
     }
 
 }
