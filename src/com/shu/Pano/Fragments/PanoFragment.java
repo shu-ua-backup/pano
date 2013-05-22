@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.shu.Pano.Objects.Coordinates;
 import com.shu.Pano.R;
+import com.shu.Pano.helpers.CombinePhoto;
 import com.shu.Pano.helpers.SaveInBackground;
 
 import java.io.IOException;
@@ -20,6 +21,8 @@ import java.io.IOException;
 public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     private int photoCount;
+    private int count;
+    private String dirName;
     private SurfaceView preview;
     private SurfaceHolder surfaceHolder;
     private Camera camera;
@@ -58,6 +61,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
 
         int prg = getActivity().getIntent().getIntExtra("photocount",1);
         photoCount = getPhotoCount(prg);
+        count = photoCount;
 
         updateInfo();
         preview = (SurfaceView) getActivity().findViewById(R.id.prewiew);
@@ -74,16 +78,8 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
         photoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-       //         getFirstCoord();
-       //         next_coord.setyAxis(123);
-       //         takePic(pictureCallback);
-               // while (photoCount > 0) {
-                    //     Log.e("coor",Float.toString(next_coord.getxAxis()));
-                    //     Log.e("coor",Float.toString(next_coord.getyAxis()));
-                    //     getPhoto();
-
-            //    }
                 isFirst=true;
+                dirName = Long.toString(System.currentTimeMillis());
                 getPhoto();
                 photoBtn.setImageResource(R.drawable.camera_icon_red);
 
@@ -212,7 +208,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
     Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] bytes, Camera camera) {
-            new SaveInBackground().execute(bytes);
+            new SaveInBackground(dirName,photoCount).execute(bytes);
             camera.startPreview();
         }
     };
@@ -256,6 +252,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
                     statusTw.setText("DONE");
                     photoBtn.setImageResource(R.drawable.camera_icon);
                     mSensorManager1.unregisterListener(this);
+                    String path = new CombinePhoto(dirName,count).combine();
                 }
             }
 
