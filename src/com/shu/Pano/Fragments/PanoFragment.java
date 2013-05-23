@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.*;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -36,6 +37,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
     private Sensor mLight1;
     private Coordinates next_coord;
     private boolean isFirst;
+    private boolean isMinused;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -85,24 +87,17 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
 
             }
         });
+
+
+        Button btn = (Button) getView().findViewById(R.id.btn);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String path = new CombinePhoto().combine(dirName,count-1);
+            }
+        });
     }
 
-    private void getFirstCoord () {
-        mSensorManager.registerListener(new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                next_coord = new Coordinates(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
-              //  mSensorManager.unregisterListener(this);
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-
-            }
-        }, mLight, SensorManager.SENSOR_DELAY_NORMAL);
-
-
-    }
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
@@ -166,7 +161,8 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
 
     private void changeCameraParam(Camera.Parameters parameters) {
         parameters.setPreviewFormat(ImageFormat.JPEG);
-        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
+        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
         parameters.setSceneMode(Camera.Parameters.SCENE_MODE_AUTO);
         parameters.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
         parameters.setExposureCompensation(0);
@@ -180,7 +176,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
     private void updateInfo() {
 
 
-        if (photoCount<=0) {
+        if (photoCount<0) {
             //show result:
         } else {
             TextView tw1 = (TextView) getView().findViewById(R.id.count);
@@ -219,8 +215,12 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
             public void onAutoFocus(boolean b, Camera camera) {
                 if (b) {
                     updateInfo();
-                    photoCount--;
-                    camera.takePicture(null, null, null,pc);
+                    if(!isMinused) {
+                        photoCount--;
+                        isMinused=true;
+                        camera.takePicture(null, null, null,pc);
+                        addAngle();
+                    }
 
                 }
             }
@@ -238,21 +238,22 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
                     if (isFirst) {
                         isFirst=false;
                         next_coord = new Coordinates(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
-                        Log.e("x-coord",Float.toString(next_coord.getxAxis()));
+                        Log.e("x-coord",Float.toString(photoCount));
+                        isMinused=false;
                         takePic(pictureCallback);
-                        addAngle();
                     } else
                     if (Math.round(sensorEvent.values[0]) == Math.round(next_coord.getxAxis())) {
-                        Log.e("x-coord",Float.toString(next_coord.getxAxis()));
+                        Log.e("x-coord",Float.toString(photoCount));
+                        isMinused=false;
                         takePic(pictureCallback);
-                        addAngle();
+                    } else {
+                        navigateHelp((sensorEvent.values[0]));
                     }
                 }
                 else {
                     statusTw.setText("DONE");
                     photoBtn.setImageResource(R.drawable.camera_icon);
                     mSensorManager1.unregisterListener(this);
-                    String path = new CombinePhoto(dirName,count).combine();
                 }
             }
 
@@ -277,7 +278,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
         if (horAngle > 60) {
             horAngle = 50;
         }
-
+        //horAngle = 40;
         float pr = progress+60;
         int res =  (int)(pr/horAngle)+1;
 
@@ -293,8 +294,26 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
             next_coord.setxAxis(x-360);
         }
 
-        statusTw.setText(Float.toString(next_coord.getxAxis()));
-
+        //statusTw.setText(Float.toString(next_coord.getxAxis()));
     }
+
+    private void navigateHelp(float x) {
+        if (x > 50 && next_coord.getxAxis() > x) {
+            if (Math.abs(next_coord.getxAxis() - x) < 10) {
+                statusTw.setText("near ->");
+            } else {
+                statusTw.setText("--->");
+            }
+        }
+        else {
+            if (Math.abs(next_coord.getxAxis() - x) < 10) {
+                statusTw.setText("<- near");
+            } else {
+                statusTw.setText("<--");
+            }
+        }
+    }
+
+
 
 }
