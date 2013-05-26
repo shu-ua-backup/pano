@@ -10,10 +10,9 @@ import android.view.*;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.shu.Pano.Objects.Coordinates;
 import com.shu.Pano.R;
-import com.shu.Pano.helpers.CombinePhoto;
+import com.shu.Pano.helpers.CombinePhotoCv;
 import com.shu.Pano.helpers.SaveInBackground;
 
 import java.io.IOException;
@@ -24,6 +23,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
     private int photoCount;
     private int count;
     private String dirName;
+    private long dirNamelong;
     private SurfaceView preview;
     private SurfaceHolder surfaceHolder;
     private Camera camera;
@@ -81,7 +81,8 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
             @Override
             public void onClick(View view) {
                 isFirst=true;
-                dirName = Long.toString(System.currentTimeMillis());
+                dirNamelong = System.currentTimeMillis();
+                dirName = Long.toString(dirNamelong);
                 getPhoto();
                 photoBtn.setImageResource(R.drawable.camera_icon_red);
 
@@ -93,7 +94,10 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String path = new CombinePhoto().combine(dirName,count-1);
+                //String path = new CombinePhoto().combine(dirName,count-1);
+                CombinePhotoCv combinePhotoCv = new CombinePhotoCv();
+                //combinePhotoCv.combineCv(dirNamelong,count);
+                combinePhotoCv.combineCv(1369381658235l,count-1,getActivity().getApplicationContext());
             }
         });
     }
@@ -117,7 +121,6 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
         }
 
         Camera.Parameters parameters = camera.getParameters();
-        //getFirstCoord();
 
         angleAccel();
         int previewSurfaceWidth = preview.getWidth();
@@ -313,6 +316,8 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
             }
         }
     }
+
+
 
 
 
