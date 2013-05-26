@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.shu.Pano.Objects.Coordinates;
 import com.shu.Pano.R;
+import com.shu.Pano.helpers.CombinePhoto;
 import com.shu.Pano.helpers.CombinePhotoCv;
 import com.shu.Pano.helpers.SaveInBackground;
 
@@ -94,10 +95,9 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //String path = new CombinePhoto().combine(dirName,count-1);
+                String path = new CombinePhoto().combine(dirName,count-1);
                 CombinePhotoCv combinePhotoCv = new CombinePhotoCv();
-                //combinePhotoCv.combineCv(dirNamelong,count);
-                combinePhotoCv.combineCv(1369381658235l,count-1,getActivity().getApplicationContext());
+                combinePhotoCv.combineCv(dirNamelong,count-1);
             }
         });
     }
@@ -277,7 +277,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
 
 
     private int getPhotoCount(int progress) {
-        float horAngle = camera.getParameters().getHorizontalViewAngle();
+        float horAngle = 30;//camera.getParameters().getHorizontalViewAngle();
         if (horAngle > 60) {
             horAngle = 50;
         }
@@ -289,7 +289,7 @@ public class PanoFragment extends Fragment implements SurfaceHolder.Callback, Ca
     }
 
     private void addAngle() {
-        float x = next_coord.getxAxis() + camera.getParameters().getHorizontalViewAngle();
+        float x = next_coord.getxAxis() + 30; //+ camera.getParameters().getHorizontalViewAngle();
         if (x < 360) {
             next_coord.setxAxis(x);
         }

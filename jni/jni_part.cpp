@@ -18,7 +18,6 @@ using namespace std;
 using namespace cv;
 
 extern "C" {
-//JNIEXPORT Mat JNICALL Java_org_opencv_samples_tutorial3_Sample3Native_FindFeatures(JNIEnv*, jobject, jlong addrGray, jlong addrRgba)
 
 JNIEXPORT void JNICALL Java_com_shu_Pano_helpers_CombinePhotoCv_StitchIt(
 		JNIEnv*, jobject, jlong namedir,jint count,jlong im3) {
@@ -32,19 +31,20 @@ JNIEXPORT void JNICALL Java_com_shu_Pano_helpers_CombinePhotoCv_StitchIt(
     ostringstream convert1;
     convert1 << namedir;
     name = convert1.str();
-	for (int k = 0; k < count; ++k) {
+	for (int k = 0; k <= count; k++) {
 		string id;
 
 		ostringstream convert;
 		convert << k;
 		id = convert.str();
 		Mat img = imread("/sdcard/Pano/" + name +"/" + id + ".jpg");
-
 		imgs.push_back(img);
 	}
 
 	Stitcher stitcher = Stitcher::createDefault(try_use_gpu);
 	Stitcher::Status status = stitcher.stitch(imgs, pano);
+
+
 
 }
 
