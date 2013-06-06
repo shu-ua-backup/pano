@@ -27,11 +27,15 @@ JNIEXPORT void JNICALL Java_com_shu_Pano_helpers_CombinePhotoCv_StitchIt(
 	Mat& pano = *((Mat*) im3);
 	// New testing
 
+	Stitcher stitcher = Stitcher::createDefault(try_use_gpu);
 	string name;
     ostringstream convert1;
     convert1 << namedir;
     name = convert1.str();
-	for (int k = 0; k <= count; k++) {
+
+	Mat img = imread("/sdcard/Pano/" + name +"/" + "0.jpg");
+	imgs.push_back(img);
+	for (int k = 1; k <= count; k++) {
 		string id;
 
 		ostringstream convert;
@@ -39,10 +43,14 @@ JNIEXPORT void JNICALL Java_com_shu_Pano_helpers_CombinePhotoCv_StitchIt(
 		id = convert.str();
 		Mat img = imread("/sdcard/Pano/" + name +"/" + id + ".jpg");
 		imgs.push_back(img);
+
+    	Stitcher::Status status = stitcher.stitch(imgs, pano);
+
+		imgs.clear();
+		imgs.push_back(pano);
 	}
 
-	Stitcher stitcher = Stitcher::createDefault(try_use_gpu);
-	Stitcher::Status status = stitcher.stitch(imgs, pano);
+
 
 
 
